@@ -205,6 +205,18 @@ open class TableViewModel: NSObject, UITableViewDataSource, UITableViewDelegate 
         return self.sectionAtIndex(sectionIndex).headerTitle
     }
 
+    open func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        let row = rowForIndexPath(indexPath)
+        return row.allowsEdit
+    }
+    
+    open func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+        let row = rowForIndexPath(indexPath)
+        return row.editActions
+    }
+
+    // MARK: 
+    
     fileprivate func observableSections() -> NSMutableArray {
         return mutableArrayValue(forKey: "sections")
     }
