@@ -30,7 +30,7 @@ import UIKit
 
     Use it in conjuction with TableSection and TableRow classes to create dynamic and configurable UITableView instances.
 */
-open class TableViewModel: NSObject, UITableViewDataSource, UITableViewDelegate {
+@objcMembers open class TableViewModel: NSObject, UITableViewDataSource, UITableViewDelegate {
 
     /// The table view that this section is bound to.
     open let tableView: UITableView

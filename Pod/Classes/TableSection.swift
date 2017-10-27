@@ -28,7 +28,7 @@ import UIKit
 /**
     The object that represents a section in a table view.
 */
-open class TableSection: NSObject {
+@objcMembers open class TableSection: NSObject {
 
     internal fileprivate(set) var rows: NSMutableArray
 
