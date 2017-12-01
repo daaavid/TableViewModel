@@ -26,7 +26,7 @@ import Foundation
 import UIKit
 
 /// Protocol to represent a table row. You implement this protocol to create rows that has a custom behavior. If you are not planning to add custom behavior, we encourage you to use the TableRow class instead.
-public protocol TableRowProtocol: class, AnyObject {
+public protocol TableRowProtocol: class {
 
     /// Returns the cell that this row contains.
     func cellForTableView(_ tableView: UITableView) -> UITableViewCell?
