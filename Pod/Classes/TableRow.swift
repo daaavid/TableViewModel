@@ -40,6 +40,12 @@ public protocol TableRowProtocol: class {
     /// If set to false, the cell cannot be selected.
     var allowsSelection: Bool { get }
 
+    /// If set to true, the cell can be edited.
+    var allowsEdit: Bool { get }
+    
+    /// The actions which will displayed when editing a row.
+    var editActions: [UITableViewRowAction]? { get }
+
     /// If set to true, deselects the row when it is selected.
     var shouldDeselectAfterSelection: Bool { get }
 
@@ -71,6 +77,12 @@ open class TableRow: TableRowProtocol {
     /// If set to false, the cell cannot be selected. Default value of this property is `true`.
     open var allowsSelection: Bool = true
 
+    /// If set to true, the cell can be edited. Default value is `false`.
+    open var allowsEdit: Bool = false
+    
+    /// The actions which will displayed when editing a row. Required if `allowsEdit` is `true`.
+    open var editActions: [UITableViewRowAction]?
+    
     /// If set to true, deselects the row when it is selected. Default value of this property is `true`.
     open var shouldDeselectAfterSelection: Bool = true
 

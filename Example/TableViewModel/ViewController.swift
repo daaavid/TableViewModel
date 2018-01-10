@@ -122,6 +122,16 @@ class ViewController: UIViewController {
             row in
             self.topSection.removeRow(row)
         }
+        row.allowsEdit = true
+        row.editActions = {
+            // Delete actions
+            let deleteAction = UITableViewRowAction(style: .default, title: "Delete", handler: { (action , indexPath) -> Void in
+                row.tableSection?.removeRow(row)
+            })
+            deleteAction.backgroundColor = UIColor.red
+            return [deleteAction]
+        }()
+        
         topSection.insertRow(row, atIndex: 1)
     }
 
