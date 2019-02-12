@@ -30,15 +30,15 @@ import UIKit
 
     Use it in conjuction with TableSection and TableRow classes to create dynamic and configurable UITableView instances.
 */
-public class TableViewModel: NSObject, UITableViewDataSource, UITableViewDelegate {
+@objcMembers open class TableViewModel: NSObject, UITableViewDataSource, UITableViewDelegate {
 
     /// The table view that this section is bound to.
-    public let tableView: UITableView
+    open let tableView: UITableView
    
     /// The row animation that will be displayed when sections are inserted or removed.
-    public var sectionAnimation: UITableViewRowAnimation
+    open var sectionAnimation: UITableViewRowAnimation
 
-    internal private(set) var sections: NSMutableArray
+    internal fileprivate(set) var sections: NSMutableArray
 
     /**
         Initializes a TableViewModel with a table view.
@@ -49,7 +49,7 @@ public class TableViewModel: NSObject, UITableViewDataSource, UITableViewDelegat
     public init(tableView: UITableView) {
         self.sections = NSMutableArray()
         self.tableView = tableView
-        self.sectionAnimation = UITableViewRowAnimation.Fade
+        self.sectionAnimation = UITableViewRowAnimation.fade
 
         super.init()
 
@@ -57,28 +57,28 @@ public class TableViewModel: NSObject, UITableViewDataSource, UITableViewDelegat
         self.tableView.delegate = self
         self.tableView.reloadData()
 
-        addObserver(self, forKeyPath: "sections", options: NSKeyValueObservingOptions.New, context: nil)
+        addObserver(self, forKeyPath: "sections", options: NSKeyValueObservingOptions.new, context: nil)
     }
 
     deinit {
         removeObserver(self, forKeyPath: "sections")
     }
 
-    override public func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String:AnyObject]?, context: UnsafeMutablePointer<Void>) {
-        guard let indexSet: NSIndexSet = change?[NSKeyValueChangeIndexesKey] as? NSIndexSet else {
+    override open func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey:Any]?, context: UnsafeMutableRawPointer?) {
+        guard let indexSet: IndexSet = change?[NSKeyValueChangeKey.indexesKey] as? IndexSet else {
             return
         }
 
-        guard let kind: NSKeyValueChange = NSKeyValueChange(rawValue: change?[NSKeyValueChangeKindKey] as! UInt) else {
+        guard let kind: NSKeyValueChange = NSKeyValueChange(rawValue: change?[NSKeyValueChangeKey.kindKey] as! UInt) else {
             return
         }
 
         self.tableView.beginUpdates()
         switch kind {
-        case .Insertion:
-            tableView.insertSections(indexSet, withRowAnimation: self.sectionAnimation)
-        case .Removal:
-            tableView.deleteSections(indexSet, withRowAnimation: self.sectionAnimation)
+        case .insertion:
+            tableView.insertSections(indexSet, with: self.sectionAnimation)
+        case .removal:
+            tableView.deleteSections(indexSet, with: self.sectionAnimation)
         default:
             return
         }
@@ -91,9 +91,9 @@ public class TableViewModel: NSObject, UITableViewDataSource, UITableViewDelegat
         - Parameters:
             - section: The TableSection instance that describes the section.
      */
-    public func addSection(section: TableSection) {
+    open func addSection(_ section: TableSection) {
         assignParentsToSection(section)
-        observableSections().addObject(section)
+        observableSections().add(section)
     }
 
     /**
@@ -103,9 +103,9 @@ public class TableViewModel: NSObject, UITableViewDataSource, UITableViewDelegat
             - section: The TableSection instance that describes the section.
             - atIndex: Index at which the section will be inserted.
      */
-    public func insertSection(section: TableSection, atIndex index: Int) {
+    open func insertSection(_ section: TableSection, atIndex index: Int) {
         assignParentsToSection(section)
-        observableSections().insertObject(section, atIndex: index)
+        observableSections().insert(section, at: index)
     }
 
     /**
@@ -114,17 +114,17 @@ public class TableViewModel: NSObject, UITableViewDataSource, UITableViewDelegat
         - Parameters:
             - section: The section to remove.
     */
-    public func removeSection(section: TableSection) {
+    open func removeSection(_ section: TableSection) {
         guard self.indexOfSection(section) != NSNotFound else {
             return
         }
 
         removeParentsFromSection(section)
-        observableSections().removeObject(section)
+        observableSections().remove(section)
     }
 
     /// Removes all sections from the tableView.
-    public func removeAllSections() {
+    open func removeAllSections() {
         let allSections: [TableSection] = self.sections.map {
             section in
             return section as! TableSection
@@ -132,16 +132,16 @@ public class TableViewModel: NSObject, UITableViewDataSource, UITableViewDelegat
         allSections.forEach(removeParentsFromSection)
         let sectionsProxy = self.observableSections()
         let range = NSMakeRange(0, sectionsProxy.count)
-        let indexes = NSIndexSet(indexesInRange: range)
-        sectionsProxy.removeObjectsAtIndexes(indexes)
+        let indexes = IndexSet(integersIn: range.toRange() ?? 0..<0)
+        sectionsProxy.removeObjects(at: indexes)
     }
 
-    private func assignParentsToSection(section: TableSection) {
+    fileprivate func assignParentsToSection(_ section: TableSection) {
         section.tableViewModel = self
         section.tableView = tableView
     }
 
-    private func removeParentsFromSection(section: TableSection) {
+    fileprivate func removeParentsFromSection(_ section: TableSection) {
         section.tableViewModel = nil
         section.tableView = nil
     }
@@ -152,62 +152,82 @@ public class TableViewModel: NSObject, UITableViewDataSource, UITableViewDelegat
         - Parameters:
             - section: The section to return the index of.
     */
-    public func indexOfSection(section: TableSection) -> Int {
-        return sections.indexOfObject(section)
+    open func indexOfSection(_ section: TableSection) -> Int {
+        return sections.index(of: section)
     }
 
-    public func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    open func numberOfSections(in tableView: UITableView) -> Int {
         return sections.count
     }
 
-    public func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    open func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return sectionAtIndex(section).numberOfRows()
     }
 
-    public func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    open func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let row = rowForIndexPath(indexPath)
         let cell = row.cellForTableView(tableView) as UITableViewCell!
 
-        return cell
+        return cell!
     }
 
-    public func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    open func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return rowForIndexPath(indexPath).heightForCell()
     }
-
-    public func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+    
+    open func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
+        let row = rowForIndexPath(indexPath)
+        if !row.allowsSelection {
+            return nil
+        }
+        return indexPath
+    }
+    
+    open func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let row = rowForIndexPath(indexPath)
 
         row.select()
 
         if row.shouldDeselectAfterSelection {
-            tableView.deselectRowAtIndexPath(indexPath, animated: true)
+            tableView.deselectRow(at: indexPath, animated: true)
         }
     }
 
-    public func tableView(tableView: UITableView, viewForHeaderInSection sectionIndex: Int) -> UIView? {
+    open func tableView(_ tableView: UITableView, viewForHeaderInSection sectionIndex: Int) -> UIView? {
         return self.sectionAtIndex(sectionIndex).headerView
     }
 
-    public func tableView(tableView: UITableView, heightForHeaderInSection sectionIndex: Int) -> CGFloat {
+    open func tableView(_ tableView: UITableView, heightForHeaderInSection sectionIndex: Int) -> CGFloat {
         return CGFloat(self.sectionAtIndex(sectionIndex).headerHeight)
     }
 
-    public func tableView(tableView: UITableView, titleForHeaderInSection sectionIndex: Int) -> String? {
+    open func tableView(_ tableView: UITableView, titleForHeaderInSection sectionIndex: Int) -> String? {
         return self.sectionAtIndex(sectionIndex).headerTitle
     }
 
-    private func observableSections() -> NSMutableArray {
-        return mutableArrayValueForKey("sections")
+    open func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        let row = rowForIndexPath(indexPath)
+        return row.allowsEdit
+    }
+    
+    open func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+        let row = rowForIndexPath(indexPath)
+        return row.editActions
     }
 
-    private func sectionAtIndex(index: Int) -> TableSection {
+    // MARK: 
+    
+    fileprivate func observableSections() -> NSMutableArray {
+        return mutableArrayValue(forKey: "sections")
+    }
+
+    fileprivate func sectionAtIndex(_ index: Int) -> TableSection {
         return sections[index] as! TableSection
     }
 
-    private func rowForIndexPath(indexPath: NSIndexPath) -> TableRowProtocol {
-        let section = sections[indexPath.section] as! TableSection
-        let row = section.rowAtIndex(indexPath.row)
+    fileprivate func rowForIndexPath(_ indexPath: IndexPath) -> TableRowProtocol {
+        let section = sections[(indexPath as NSIndexPath).section] as! TableSection
+        let row = section.rowAtIndex((indexPath as NSIndexPath).row)
         return row
     }
 
@@ -216,7 +236,7 @@ public class TableViewModel: NSObject, UITableViewDataSource, UITableViewDelegat
      
         - Warning: Do not try to modify this array, use add, insert and remove methods instead.
     */
-    public func allSections() -> NSArray {
+    open func allSections() -> NSArray {
         return sections
     }
 }

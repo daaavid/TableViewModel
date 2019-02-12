@@ -61,7 +61,7 @@ class TableViewModelSpec: QuickSpec {
                     var headerView: UIView!
 
                     beforeEach {
-                        headerView = UIView(frame: CGRectMake(0, 0, 320, 100))
+                        headerView = UIView(frame: CGRect(x: 0, y: 0, width: 320, height: 100))
 
                         section.headerView = headerView
                         section.headerHeight = Float(30)

@@ -32,12 +32,12 @@ import TableViewModel
 class TableRowSpec: QuickSpec {
     override func spec() {
         describe("TableRow") {
-            var bundle: NSBundle!
+            var bundle: Bundle!
             var tableRow: TableRow!
             var tableView: UITableView!
 
             beforeEach {
-                bundle = NSBundle(forClass: self.dynamicType)
+                bundle = Bundle(for: type(of: self))
                 tableView = UITableView()
                 tableRow = TableRow(cellIdentifier: "SampleCell1", inBundle: bundle)
             }
@@ -55,7 +55,7 @@ class TableRowSpec: QuickSpec {
                 }
 
                 it("registers the cell as a reusable cell in the table view") {
-                    let cell = tableView.dequeueReusableCellWithIdentifier("SampleCell1")
+                    let cell = tableView.dequeueReusableCell(withIdentifier: "SampleCell1")
                     expect(cell).toNot(beNil())
                 }
             }

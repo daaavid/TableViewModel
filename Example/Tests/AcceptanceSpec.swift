@@ -38,14 +38,14 @@ class AcceptanceSpec: QuickSpec {
                 var view: UIView!
                 var viewController: UIViewController!
                 var model: TableViewModel!
-                var bundle: NSBundle!
+                var bundle: Bundle!
 
                 /*
                  * Shortcuts for accessing table cells
                  */
 
-                func cellAtIndexOfFirstSection(rowindex: Int) -> UITableViewCell? {
-                    return tableView.cellForRowAtIndexPath(indexPathForRowInFirstSection(rowindex))
+                func cellAtIndexOfFirstSection(_ rowindex: Int) -> UITableViewCell? {
+                    return tableView.cellForRow(at: indexPathForRowInFirstSection(rowindex))
                 }
 
                 func firstCell() -> UITableViewCell? {
@@ -61,10 +61,10 @@ class AcceptanceSpec: QuickSpec {
                 }
 
                 beforeEach {
-                    bundle = NSBundle(forClass: self.dynamicType)
+                    bundle = Bundle(for: type(of: self))
 
                     view = UIView()
-                    view.frame = UIScreen.mainScreen().bounds
+                    view.frame = UIScreen.main.bounds
 
                     viewController = UIViewController()
                     viewController.view = view
@@ -115,8 +115,8 @@ class AcceptanceSpec: QuickSpec {
                         }
 
                         it("has sections in correct order") {
-                            expect(tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 0))).to(beASampleCell1())
-                            expect(tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 1))).to(beASampleCell2())
+                            expect(tableView.cellForRow(at: IndexPath(row: 0, section: 0))).to(beASampleCell1())
+                            expect(tableView.cellForRow(at: IndexPath(row: 0, section: 1))).to(beASampleCell2())
                         }
 
                         context("when all sections are removed from the model") {
@@ -150,8 +150,8 @@ class AcceptanceSpec: QuickSpec {
                         }
 
                         it("has sections in correct order") {
-                            expect(tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 1))).to(beASampleCell1())
-                            expect(tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 0))).to(beASampleCell2())
+                            expect(tableView.cellForRow(at: IndexPath(row: 0, section: 1))).to(beASampleCell1())
+                            expect(tableView.cellForRow(at: IndexPath(row: 0, section: 0))).to(beASampleCell2())
                         }
                     }
 
@@ -175,7 +175,7 @@ class AcceptanceSpec: QuickSpec {
                         }
 
                         it("has 1 cell in section") {
-                            expect(tableView.numberOfRowsInSection(0)) == 1
+                            expect(tableView.numberOfRows(inSection: 0)) == 1
                         }
 
                         it("has the correct cell") {
@@ -192,7 +192,7 @@ class AcceptanceSpec: QuickSpec {
                             }
 
                             it("has 2 cells in section") {
-                                expect(tableView.numberOfRowsInSection(0)) == 2
+                                expect(tableView.numberOfRows(inSection: 0)) == 2
                             }
 
                             it("has the correct cells") {
@@ -214,11 +214,11 @@ class AcceptanceSpec: QuickSpec {
                                 }
 
                                 it("has 1 cell") {
-                                    expect(tableView.numberOfRowsInSection(0)) == 1
+                                    expect(tableView.numberOfRows(inSection: 0)) == 1
                                 }
 
                                 it("has the correct cell") {
-                                    let actualCell = tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 0))
+                                    let actualCell = tableView.cellForRow(at: IndexPath(row: 0, section: 0))
                                     expect(actualCell) === cell2
                                 }
                             }
@@ -229,7 +229,7 @@ class AcceptanceSpec: QuickSpec {
                                 }
 
                                 it("removes all rows section") {
-                                    expect(tableView.numberOfRowsInSection(0)) == 0
+                                    expect(tableView.numberOfRows(inSection: 0)) == 0
                                 }
                             }
                         }
@@ -283,8 +283,8 @@ class AcceptanceSpec: QuickSpec {
 
                             context("when the cell is selected") {
                                 beforeEach {
-                                    tableView.selectRowAtIndexPath(firstRowIndexPath(), animated: false, scrollPosition: UITableViewScrollPosition.Top)
-                                    model.tableView(tableView, didSelectRowAtIndexPath: firstRowIndexPath())
+                                    tableView.selectRow(at: firstRowIndexPath(), animated: false, scrollPosition: UITableViewScrollPosition.top)
+                                    model.tableView(tableView, didSelectRowAt: firstRowIndexPath())
                                 }
 
                                 it("calls the selection handler when the cell is selected") {
@@ -309,8 +309,8 @@ class AcceptanceSpec: QuickSpec {
 
                             context("when the cell is selected") {
                                 beforeEach {
-                                    tableView.selectRowAtIndexPath(firstRowIndexPath(), animated: false, scrollPosition: UITableViewScrollPosition.Top)
-                                    model.tableView(tableView, didSelectRowAtIndexPath: firstRowIndexPath())
+                                    tableView.selectRow(at: firstRowIndexPath(), animated: false, scrollPosition: UITableViewScrollPosition.top)
+                                    model.tableView(tableView, didSelectRowAt: firstRowIndexPath())
                                 }
 
                                 it("does not deselect the cell") {
@@ -323,12 +323,12 @@ class AcceptanceSpec: QuickSpec {
 
                         context("when the row is configured for not to deselect after selection") {
 
-                            func selectRowAtIndexPath(indexPath: NSIndexPath) {
-                                tableView.selectRowAtIndexPath(indexPath, animated: false, scrollPosition: UITableViewScrollPosition.Top)
+                            func selectRow(at indexPath: IndexPath) {
+                                tableView.selectRow(at: indexPath, animated: false, scrollPosition: UITableViewScrollPosition.top)
 
                                 // We need to notify the model manually here because tableView doesn't
                                 // call the delegate method after selectRowAtIndexPath
-                                model.tableView(tableView, didSelectRowAtIndexPath: firstRowIndexPath())
+                                model.tableView(tableView, didSelectRowAt: firstRowIndexPath())
                             }
 
                             beforeEach {
@@ -337,7 +337,7 @@ class AcceptanceSpec: QuickSpec {
 
                             context("when the cell is selected") {
                                 beforeEach {
-                                    selectRowAtIndexPath(firstRowIndexPath())
+                                    selectRow(at: firstRowIndexPath())
                                 }
 
                                 it("does not deselect the cell") {
@@ -406,9 +406,9 @@ class AcceptanceSpec: QuickSpec {
 
                         it("renders each row in correct height") {
                             for i in 1 ..< 20 {
-                                let indexPath = NSIndexPath(forRow: (i - 1), inSection: 0)
-                                tableView.scrollToRowAtIndexPath(indexPath, atScrollPosition: UITableViewScrollPosition.Top, animated: false)
-                                let cell = tableView.cellForRowAtIndexPath(indexPath)
+                                let indexPath = IndexPath(row: (i - 1), section: 0)
+                                tableView.scrollToRow(at: indexPath, at: .top, animated: false)
+                                let cell = tableView.cellForRow(at: indexPath)
                                 expect(cell?.frame.height) == CGFloat(100 + i)
                             }
                         }
@@ -441,7 +441,7 @@ class AcceptanceSpec: QuickSpec {
                             }
 
                             it("removes each row in the parameter array from the table view") {
-                                expect(tableView.numberOfRowsInSection(0)) == 1
+                                expect(tableView.numberOfRows(inSection: 0)) == 1
                                 expect(firstCell()).to(beASampleCellWithLabelText("row2"))
                             }
                         }
@@ -476,7 +476,7 @@ class AcceptanceSpec: QuickSpec {
                     var headerView: UIView!
 
                     beforeEach {
-                        headerView = UIView(frame: CGRectMake(0, 0, 320, 100))
+                        headerView = UIView(frame: CGRect(x: 0, y: 0, width: 320, height: 100))
 
                         section = TableSection()
                         section.headerView = headerView
@@ -509,24 +509,24 @@ class AcceptanceSpec: QuickSpec {
  * Utility functions
  */
 
-func indexPathForRowInFirstSection(rowIndex: Int) -> NSIndexPath {
-    return NSIndexPath(forRow: rowIndex, inSection: 0)
+func indexPathForRowInFirstSection(_ rowIndex: Int) -> IndexPath {
+    return IndexPath(row: rowIndex, section: 0)
 }
 
-func firstRowIndexPath() -> NSIndexPath {
+func firstRowIndexPath() -> IndexPath {
     return indexPathForRowInFirstSection(0)
 }
 
-func secondRowIndexPath() -> NSIndexPath {
+func secondRowIndexPath() -> IndexPath {
     return indexPathForRowInFirstSection(1)
 }
 
-func thirdRowIndexPath() -> NSIndexPath {
+func thirdRowIndexPath() -> IndexPath {
     return indexPathForRowInFirstSection(2)
 }
 
-func sampleRowWithLabelText(labelText: String) -> TableRow {
-    let row = TableRow(cellIdentifier: "SampleCell1", inBundle: NSBundle(forClass: AcceptanceSpec().dynamicType))
+func sampleRowWithLabelText(_ labelText: String) -> TableRow {
+    let row = TableRow(cellIdentifier: "SampleCell1", inBundle: Bundle(for: type(of: AcceptanceSpec())))
     row.configureCell {
         cell in
         let label = cell.contentView.subviews[0] as! UILabel
@@ -560,14 +560,14 @@ func beASampleCell2<T:UITableViewCell>() -> MatcherFunc<T?> {
         do {
             let cell = try actualExpression.evaluate() as? UITableViewCell
             let button = cell?.contentView.subviews[0] as? UIButton
-            return button?.titleForState(UIControlState.Normal) == "SampleCell2"
+            return button?.title(for: UIControlState.normal) == "SampleCell2"
         } catch {
             return false
         }
     }
 }
 
-func beASampleCellWithLabelText<T:UITableViewCell>(expectedLabelText: String) -> MatcherFunc<T?> {
+func beASampleCellWithLabelText<T:UITableViewCell>(_ expectedLabelText: String) -> MatcherFunc<T?> {
     return MatcherFunc {
         actualExpression, failureMessage in
         failureMessage.postfixMessage = " be a SampleCell1 with label text '\(expectedLabelText)'"

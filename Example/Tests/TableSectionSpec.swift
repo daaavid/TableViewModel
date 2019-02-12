@@ -46,7 +46,7 @@ class TableSectionSpec: QuickSpec {
                 var row: TableRow!
 
                 beforeEach {
-                    row = TableRow(cellIdentifier: "", inBundle: NSBundle(forClass: self.dynamicType))
+                    row = TableRow(cellIdentifier: "", inBundle: Bundle(for: type(of: self)))
                     section.addRow(row)
                 }
 

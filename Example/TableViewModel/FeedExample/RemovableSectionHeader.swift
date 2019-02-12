@@ -28,7 +28,7 @@ import UIKit
 class RemovableSectionHeader: UIView {
     var onRemoveTapClosure: (() -> ())?
 
-    func onRemoveTap(closure: ()->()) {
+    func onRemoveTap(_ closure: @escaping ()->()) {
         self.onRemoveTapClosure = closure
     }
 

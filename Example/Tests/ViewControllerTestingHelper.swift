@@ -25,9 +25,9 @@ THE SOFTWARE.
 import Foundation
 import UIKit
 
-public class ViewControllerTestingHelper {
+open class ViewControllerTestingHelper {
     class func wait() {
-        NSRunLoop.mainRunLoop().runUntilDate(NSDate(timeIntervalSinceNow: 0.01))
+        RunLoop.main.run(until: Date(timeIntervalSinceNow: 0.01))
     }
 
     class func emptyViewController() -> UIViewController {
@@ -36,7 +36,7 @@ public class ViewControllerTestingHelper {
         return viewController
     }
 
-    class func prepareWindowWithRootViewController(viewController: UIViewController) -> UIWindow {
+    class func prepareWindowWithRootViewController(_ viewController: UIViewController) -> UIWindow {
         let window: UIWindow = UIWindow(frame: CGRect())
         window.makeKeyAndVisible()
         window.rootViewController = viewController
@@ -44,23 +44,23 @@ public class ViewControllerTestingHelper {
         return window
     }
 
-    class func presentViewController(viewController: UIViewController) {
+    class func presentViewController(_ viewController: UIViewController) {
         let window: UIWindow = prepareWindowWithRootViewController(emptyViewController())
-        window.rootViewController?.presentViewController(viewController, animated: false, completion: nil)
+        window.rootViewController?.present(viewController, animated: false, completion: nil)
         wait()
     }
 
-    class func dismissViewController(viewController: UIViewController) {
-        viewController.dismissViewControllerAnimated(false, completion: nil)
+    class func dismissViewController(_ viewController: UIViewController) {
+        viewController.dismiss(animated: false, completion: nil)
         wait()
     }
 
-    class func presentAndDismissViewController(viewController: UIViewController) {
+    class func presentAndDismissViewController(_ viewController: UIViewController) {
         presentViewController(viewController)
         dismissViewController(viewController)
     }
 
-    class func pushViewController(viewController: UIViewController) -> UINavigationController {
+    class func pushViewController(_ viewController: UIViewController) -> UINavigationController {
         let navigationController: UINavigationController = UINavigationController(rootViewController: emptyViewController())
         _ = prepareWindowWithRootViewController(navigationController)
         navigationController.pushViewController(viewController, animated: false)

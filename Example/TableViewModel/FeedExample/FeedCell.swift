@@ -62,16 +62,16 @@ class FeedCell: UITableViewCell {
     func calculateCellHeight() {
         if let feedItem = self.feedItem {
             let baseHeight: Float = 70
-            let commentViewHeight = textViewHeight(feedItem.comment, width: 256, font: UIFont.systemFontOfSize(13))
+            let commentViewHeight = textViewHeight(feedItem.comment, width: 256, font: UIFont.systemFont(ofSize: 13))
             cellHeight = baseHeight + commentViewHeight
         }
     }
 
-    func textViewHeight(text: String, width: Float, font: UIFont) -> Float {
+    func textViewHeight(_ text: String, width: Float, font: UIFont) -> Float {
         let attributedText = NSAttributedString(string: text, attributes: [NSFontAttributeName: font])
         let textViewMargin: Float = 10
-        let size = attributedText.boundingRectWithSize(CGSizeMake(CGFloat(width - textViewMargin), CGFloat.max),
-                options: NSStringDrawingOptions.UsesLineFragmentOrigin,
+        let size = attributedText.boundingRect(with: CGSize(width: CGFloat(width - textViewMargin), height: CGFloat.greatestFiniteMagnitude),
+                options: NSStringDrawingOptions.usesLineFragmentOrigin,
                 context: nil)
         return Float(size.height)
     }

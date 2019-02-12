@@ -26,16 +26,25 @@ import Foundation
 import UIKit
 
 /// Protocol to represent a table row. You implement this protocol to create rows that has a custom behavior. If you are not planning to add custom behavior, we encourage you to use the TableRow class instead.
-public protocol TableRowProtocol: class, AnyObject {
+public protocol TableRowProtocol: class {
 
     /// Returns the cell that this row contains.
-    func cellForTableView(tableView: UITableView) -> UITableViewCell?
+    func cellForTableView(_ tableView: UITableView) -> UITableViewCell?
 
     /// Returns the height of cell.
     func heightForCell() -> CGFloat
 
     /// Called when the row is selected.
     func select()
+
+    /// If set to false, the cell cannot be selected.
+    var allowsSelection: Bool { get }
+
+    /// If set to true, the cell can be edited.
+    var allowsEdit: Bool { get }
+    
+    /// The actions which will displayed when editing a row.
+    var editActions: [UITableViewRowAction]? { get }
 
     /// If set to true, deselects the row when it is selected.
     var shouldDeselectAfterSelection: Bool { get }
@@ -45,31 +54,40 @@ public protocol TableRowProtocol: class, AnyObject {
 }
 
 /// The object that represents a table row.
-public class TableRow: TableRowProtocol {
-    private let cellIdentifier: String
-    private var bundle: NSBundle?
-    private var configureClosure: ((cell:UITableViewCell) -> ())?
-    private var configureHeightClosure: (() -> Float)?
-    private var onSelectionClosure: ((row:TableRow) -> ())?
+open class TableRow: TableRowProtocol {
+    fileprivate let cellIdentifier: String
+    fileprivate var bundle: Bundle?
+    fileprivate var configureClosure: ((_ cell:UITableViewCell) -> ())?
+    fileprivate var configureHeightClosure: (() -> Float)?
+    fileprivate var onSelectionClosure: ((_ row:TableRow) -> ())?
 
     /// The cell instance this row contains.
-    public private(set) var cell: UITableViewCell?
+    open fileprivate(set) var cell: UITableViewCell?
     
     /**
         The table section that this row belongs to.
      
         - Warning: This property will be set internally when the row is added to a TableSection. Do not try to set this manually.
     */
-    public weak var tableSection: TableSection?
+    open weak var tableSection: TableSection?
     
     /// Height of the row.
-    public var height: Float?
+    open var height: Float?
+    
+    /// If set to false, the cell cannot be selected. Default value of this property is `true`.
+    open var allowsSelection: Bool = true
 
+    /// If set to true, the cell can be edited. Default value is `false`.
+    open var allowsEdit: Bool = false
+    
+    /// The actions which will displayed when editing a row. Required if `allowsEdit` is `true`.
+    open var editActions: [UITableViewRowAction]?
+    
     /// If set to true, deselects the row when it is selected. Default value of this property is `true`.
-    public var shouldDeselectAfterSelection: Bool = true
+    open var shouldDeselectAfterSelection: Bool = true
 
     /// Custom user object to tag this row. This property is optional.
-    public var userObject: AnyObject?
+    open var userObject: AnyObject?
 
     /**
         Initializes the row.
@@ -78,13 +96,13 @@ public class TableRow: TableRowProtocol {
             - cellIdentifier: Either the reuse identifier of a reusable cell defined in a TableView using the interface builder, or name of an XIB file that contains one and only one UITableViewCell object.
             - inBundle: [Optional] This is the bundle that the XIB file is in. Default is nil.
     */
-    public init(cellIdentifier: String, inBundle bundle: NSBundle? = nil) {
+    public init(cellIdentifier: String, inBundle bundle: Bundle? = nil) {
         self.cellIdentifier = cellIdentifier
         self.bundle = bundle
     }
 
     /// Returns the cell that this row contains.
-    public func cellForTableView(tableView: UITableView) -> UITableViewCell? {
+    open func cellForTableView(_ tableView: UITableView) -> UITableViewCell? {
         self.cell = loadCellForTableView(tableView)
 
         callConfigureCellClosure()
@@ -101,7 +119,7 @@ public class TableRow: TableRowProtocol {
     }
 
     /// Returns the height of cell.
-    public func heightForCell() -> CGFloat {
+    open func heightForCell() -> CGFloat {
         if let configureHeightClosure = self.configureHeightClosure {
             return CGFloat(configureHeightClosure())
         }
@@ -114,16 +132,16 @@ public class TableRow: TableRowProtocol {
     }
 
     /// Called when the row is selected.
-    public func select() {
+    open func select() {
         if let closure = onSelectionClosure {
-            closure(row: self)
+            closure(self)
         }
     }
 
     /**
         Adds a closure which is called when a cell will be displayed. Use this closure to display your custom data in the cell.
     */
-    public func configureCell(closure: (cell:UITableViewCell) -> ()) {
+    open func configureCell(_ closure: @escaping (_ cell:UITableViewCell) -> ()) {
         configureClosure = closure
         callConfigureCellClosure()
     }
@@ -131,18 +149,18 @@ public class TableRow: TableRowProtocol {
     /**
         Adds a closure which is called when a cell will be displayed. Use this closure to adjust the height for cell.
     */
-    public func configureHeight(closure: () -> Float) {
+    open func configureHeight(_ closure: @escaping () -> Float) {
         configureHeightClosure = closure
     }
 
     /**
         Adds a closure which will be called when a user selects the cell. Use this to implement custom behavior when the cell is selected.
     */
-    public func onSelect(closure: (row:TableRow) -> ()) {
+    open func onSelect(_ closure: @escaping (_ row:TableRow) -> ()) {
         onSelectionClosure = closure
     }
 
-    private func callConfigureCellClosure() {
+    fileprivate func callConfigureCellClosure() {
         guard let closure = self.configureClosure else {
             return
         }
@@ -151,10 +169,10 @@ public class TableRow: TableRowProtocol {
             return
         }
 
-        closure(cell: cell)
+        closure(cell)
     }
 
-    private func loadCellForTableView(tableViewOrNil: UITableView?) -> UITableViewCell? {
+    fileprivate func loadCellForTableView(_ tableViewOrNil: UITableView?) -> UITableViewCell? {
         let tableView: UITableView
         if tableViewOrNil == nil {
             tableView = UITableView()
@@ -162,13 +180,13 @@ public class TableRow: TableRowProtocol {
             tableView = tableViewOrNil as UITableView!
         }
 
-        let dequeued = tableView.dequeueReusableCellWithIdentifier(cellIdentifier)
+        let dequeued = tableView.dequeueReusableCell(withIdentifier: cellIdentifier)
         if dequeued != nil {
             return dequeued
         } else {
             let nib: UINib = UINib(nibName: cellIdentifier, bundle: bundle)
-            tableView.registerNib(nib, forCellReuseIdentifier: cellIdentifier)
-            let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier)
+            tableView.register(nib, forCellReuseIdentifier: cellIdentifier)
+            let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier)
             return cell
         }
     }

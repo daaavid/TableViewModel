@@ -28,32 +28,32 @@ import UIKit
 /**
     The object that represents a section in a table view.
 */
-public class TableSection: NSObject {
+@objcMembers open class TableSection: NSObject {
 
-    internal private(set) var rows: NSMutableArray
+    internal fileprivate(set) var rows: NSMutableArray
 
     /**
         The table view that this section is bound to.
     
         - Warning: This property will be set internally when the section is added to a TableViewModel. Do not try to set this manually.
     */
-    public internal(set) var tableView: UITableView?
+    open internal(set) var tableView: UITableView?
     
     /**
      The table view model that this section belongs to.
         
      - Warning: This property will be set internally when the section is added to a TableViewModel. Do not try to set this manually.
     */
-    public internal(set) weak var tableViewModel: TableViewModel?
+    open internal(set) weak var tableViewModel: TableViewModel?
 
     /// The row animation that will be displayed when rows are inserted or removed.
-    public var rowAnimation: UITableViewRowAnimation
+    open var rowAnimation: UITableViewRowAnimation
 
     /// A UIView instance that will be displayed as the header view of the section.
-    public var headerView: UIView?
+    open var headerView: UIView?
     
     /// Height of the header view.
-    public var headerHeight: Float = 0
+    open var headerHeight: Float = 0
     
     /**
         Header title of the section.
@@ -62,7 +62,7 @@ public class TableSection: NSObject {
 
         - Warning: If the headerView property is set, this title will not be shown.
      */
-    public var headerTitle: String? = nil {
+    open var headerTitle: String? = nil {
         didSet {
             if headerHeight == 0 {
                 headerHeight = Float(30)
@@ -73,21 +73,21 @@ public class TableSection: NSObject {
     /**
         Initializes the TableSection.
     */
-    public init(rowAnimation: UITableViewRowAnimation = UITableViewRowAnimation.Fade) {
+    public init(rowAnimation: UITableViewRowAnimation = UITableViewRowAnimation.fade) {
         rows = NSMutableArray()
         self.rowAnimation = rowAnimation
 
         super.init()
 
-        addObserver(self, forKeyPath: "rows", options: NSKeyValueObservingOptions.New, context: nil)
+        addObserver(self, forKeyPath: "rows", options: NSKeyValueObservingOptions.new, context: nil)
     }
 
     deinit {
         removeObserver(self, forKeyPath: "rows")
     }
 
-    override public func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String:AnyObject]?, context: UnsafeMutablePointer<Void>) {
-        guard let indexSet: NSIndexSet = change?[NSKeyValueChangeIndexesKey] as? NSIndexSet else {
+    override open func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey:Any]?, context: UnsafeMutableRawPointer?) {
+        guard let indexSet: IndexSet = change?[NSKeyValueChangeKey.indexesKey] as? IndexSet else {
             return
         }
 
@@ -95,7 +95,7 @@ public class TableSection: NSObject {
             return
         }
 
-        guard let kind: NSKeyValueChange = NSKeyValueChange(rawValue: change?[NSKeyValueChangeKindKey] as! UInt) else {
+        guard let kind: NSKeyValueChange = NSKeyValueChange(rawValue: change?[NSKeyValueChangeKey.kindKey] as! UInt) else {
             return
         }
 
@@ -105,20 +105,18 @@ public class TableSection: NSObject {
 
         let sectionIndex = tableViewModel.indexOfSection(self)
 
-        var indexPaths = Array<NSIndexPath>()
-        indexSet.enumerateIndexesUsingBlock {
-            (idx, _) in
-
-            let indexPath: NSIndexPath = NSIndexPath(forRow: idx, inSection: sectionIndex)
+        var indexPaths = Array<IndexPath>()
+        for idx in indexSet {
+            let indexPath: IndexPath = IndexPath(row: idx, section: sectionIndex)
             indexPaths.append(indexPath)
         }
 
         tableView.beginUpdates()
         switch kind {
-        case .Insertion:
-            tableView.insertRowsAtIndexPaths(indexPaths, withRowAnimation: rowAnimation)
-        case .Removal:
-            tableView.deleteRowsAtIndexPaths(indexPaths, withRowAnimation: rowAnimation)
+        case .insertion:
+            tableView.insertRows(at: indexPaths, with: rowAnimation)
+        case .removal:
+            tableView.deleteRows(at: indexPaths, with: rowAnimation)
         default:
             return
         }
@@ -131,9 +129,9 @@ public class TableSection: NSObject {
         - Parameters:
             - row: The row to be added.
     */
-    public func addRow(row: TableRowProtocol) {
+    open func addRow(_ row: TableRowProtocol) {
         assignTableSectionOfRow(row)
-        observableRows().addObject(row)
+        observableRows().add(row)
     }
 
     /**
@@ -144,7 +142,7 @@ public class TableSection: NSObject {
      
         - Remark: Use this method instead of adding rows one by one in a loop. It performs remarkably better.
     */
-    public func addRows(rowsToAdd: Array<TableRowProtocol>) {
+    open func addRows(_ rowsToAdd: Array<TableRowProtocol>) {
         rowsToAdd.forEach(assignTableSectionOfRow)
         let rowObjects = rowsToAdd.map {
             row in
@@ -152,8 +150,8 @@ public class TableSection: NSObject {
         }
         let rowsProxy = self.observableRows()
         let range = NSMakeRange(self.rows.count, rowObjects.count)
-        let indexes = NSIndexSet(indexesInRange: range)
-        rowsProxy.insertObjects(rowObjects, atIndexes: indexes)
+        let indexes = IndexSet(integersIn: range.toRange() ?? 0..<0)
+        rowsProxy.insert(rowObjects, at: indexes)
     }
 
     /**
@@ -163,9 +161,9 @@ public class TableSection: NSObject {
             - row: The row to be added.
             - atIndex: Index at which the row will be added.
      */
-    public func insertRow(row: TableRowProtocol, atIndex index: Int) {
+    open func insertRow(_ row: TableRowProtocol, atIndex index: Int) {
         assignTableSectionOfRow(row)
-        observableRows().insertObject(row, atIndex: index)
+        observableRows().insert(row, at: index)
     }
 
     /**
@@ -174,9 +172,9 @@ public class TableSection: NSObject {
         - Parameters:
             - row: The row to be removed.
     */
-    public func removeRow(row: TableRowProtocol) {
+    open func removeRow(_ row: TableRowProtocol) {
         removeTableSectionOfRow(row)
-        observableRows().removeObject(row)
+        observableRows().remove(row)
     }
 
     /**
@@ -187,15 +185,15 @@ public class TableSection: NSObject {
 
         - Remark: Use this method instead of removing rows one by one in a loop. It performs remarkably better.
     */
-    public func removeRows(rowsToRemove: Array<TableRowProtocol>) {
+    open func removeRows(_ rowsToRemove: Array<TableRowProtocol>) {
         rowsToRemove.forEach(removeTableSectionOfRow)
         let rowsProxy = self.observableRows()
         let indexes = NSMutableIndexSet()
         for row in rowsToRemove {
             let index = self.indexOfRow(row)
-            indexes.addIndex(index)
+            indexes.add(index)
         }
-        rowsProxy.removeObjectsAtIndexes(indexes)
+        rowsProxy.removeObjects(at: indexes as IndexSet)
     }
 
     /**
@@ -203,7 +201,7 @@ public class TableSection: NSObject {
 
         - Remark: Use this method instead of adding rows one by one in a loop. It performs remarkably better.
     */
-    public func removeAllRows() {
+    open func removeAllRows() {
         let allRows = self.rows.map {
             row in
             return row as! TableRowProtocol
@@ -211,38 +209,38 @@ public class TableSection: NSObject {
         allRows.forEach(removeTableSectionOfRow)
         let rowsProxy = self.observableRows()
         let range = NSMakeRange(0, rowsProxy.count)
-        let indexes = NSIndexSet(indexesInRange: range)
-        rowsProxy.removeObjectsAtIndexes(indexes)
+        let indexes = IndexSet(integersIn: range.toRange() ?? 0..<0)
+        rowsProxy.removeObjects(at: indexes)
     }
 
     // Returns number of rows in the section.
-    public func numberOfRows() -> Int {
+    open func numberOfRows() -> Int {
         return rows.count
     }
 
     /// Returns the row object at given index.
-    public func rowAtIndex(index: Int) -> TableRowProtocol {
-        return rows.objectAtIndex(index) as! TableRowProtocol
+    open func rowAtIndex(_ index: Int) -> TableRowProtocol {
+        return rows.object(at: index) as! TableRowProtocol
     }
 
     /// Returns the index of row object.
-    public func indexOfRow(row: TableRowProtocol) -> Int {
-        return rows.indexOfObject(row)
+    open func indexOfRow(_ row: TableRowProtocol) -> Int {
+        return rows.index(of: row)
     }
 
-    private func assignTableSectionOfRow(row: TableRowProtocol) {
+    fileprivate func assignTableSectionOfRow(_ row: TableRowProtocol) {
         row.tableSection = self
     }
 
-    private func removeTableSectionOfRow(row: TableRowProtocol) {
+    fileprivate func removeTableSectionOfRow(_ row: TableRowProtocol) {
         guard self.indexOfRow(row) != NSNotFound else {
             return
         }
         row.tableSection = nil
     }
 
-    private func observableRows() -> NSMutableArray {
-        return mutableArrayValueForKey("rows")
+    fileprivate func observableRows() -> NSMutableArray {
+        return mutableArrayValue(forKey: "rows")
     }
 
     /**
@@ -250,7 +248,7 @@ public class TableSection: NSObject {
      
         - Warning: Do not try to modify this array, use add, insert and remove methods instead.
     */
-    public func allRows() -> NSArray {
+    open func allRows() -> NSArray {
         return rows
     }
 }

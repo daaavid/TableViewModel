@@ -39,9 +39,9 @@ class ViewController: UIViewController {
 
         addFeedSection()
         addRemovableSection()
-        self.performSelector(#selector(ViewController.insertGiveFeedbackRow), withObject: nil, afterDelay: 3)
-        self.performSelector(#selector(ViewController.insertRemovableRow), withObject: nil, afterDelay: 5)
-        self.performSelector(#selector(ViewController.insertFeedRow), withObject: nil, afterDelay: 7)
+        self.perform(#selector(ViewController.insertGiveFeedbackRow), with: nil, afterDelay: 3)
+        self.perform(#selector(ViewController.insertRemovableRow), with: nil, afterDelay: 5)
+        self.perform(#selector(ViewController.insertFeedRow), with: nil, afterDelay: 7)
     }
 
     func addFeedSection() {
@@ -70,11 +70,11 @@ class ViewController: UIViewController {
         topSection.addRow(TableRow(cellIdentifier: "SpacerCell"))
     }
 
-    func onLike(feedItem: FeedItem) {
+    func onLike(_ feedItem: FeedItem) {
         self.alert("Liked: \(feedItem.user.name)")
     }
 
-    func onShare(feedItem: FeedItem) {
+    func onShare(_ feedItem: FeedItem) {
         self.alert("Shared: \(feedItem.user.name)")
     }
 
@@ -84,7 +84,7 @@ class ViewController: UIViewController {
         tableViewModel.addSection(removableSection)
 
         // Create the header for the section and set it as the header view of section
-        let removableSectionHeader = NSBundle.mainBundle().loadNibNamed("RemovableSectionHeader", owner: nil, options: nil)[0] as! RemovableSectionHeader
+        let removableSectionHeader = Bundle.main.loadNibNamed("RemovableSectionHeader", owner: nil, options: nil)?[0] as! RemovableSectionHeader
         removableSection.headerView = removableSectionHeader
         removableSection.headerHeight = 30
 
@@ -106,7 +106,7 @@ class ViewController: UIViewController {
     }
 
     func insertGiveFeedbackRow() {
-        topSection.rowAnimation = UITableViewRowAnimation.Top
+        topSection.rowAnimation = UITableViewRowAnimation.top
         let row = TableRow(cellIdentifier: "GiveFeedbackCell")
         row.onSelect {
             row in
@@ -116,24 +116,34 @@ class ViewController: UIViewController {
     }
 
     func insertRemovableRow() {
-        topSection.rowAnimation = UITableViewRowAnimation.Right
+        topSection.rowAnimation = UITableViewRowAnimation.right
         let row = TableRow(cellIdentifier: "RemovableCell")
         row.onSelect {
             row in
             self.topSection.removeRow(row)
         }
+        row.allowsEdit = true
+        row.editActions = {
+            // Delete actions
+            let deleteAction = UITableViewRowAction(style: .default, title: "Delete", handler: { (action , indexPath) -> Void in
+                row.tableSection?.removeRow(row)
+            })
+            deleteAction.backgroundColor = UIColor.red
+            return [deleteAction]
+        }()
+        
         topSection.insertRow(row, atIndex: 1)
     }
 
     func insertFeedRow() {
-        topSection.rowAnimation = UITableViewRowAnimation.Left
+        topSection.rowAnimation = UITableViewRowAnimation.left
         let feedItem = FeedItem.toBeAddedLater()
         let row = TableRow(cellIdentifier: "FeedCell")
         configureFeedRow(row, withFeedItem: feedItem)
         topSection.insertRow(row, atIndex: topSection.numberOfRows() - 1)
     }
 
-    func configureFeedRow(row: TableRow, withFeedItem feedItem: FeedItem) {
+    func configureFeedRow(_ row: TableRow, withFeedItem feedItem: FeedItem) {
         row.configureCell {
             cell in
             let feedCell = cell as! FeedCell
@@ -148,14 +158,14 @@ class ViewController: UIViewController {
         }
     }
 
-    func alert(message: String) {
-        let alert = UIAlertController(title: nil, message: message, preferredStyle: UIAlertControllerStyle.Alert)
-        let cancelAction = UIAlertAction(title: "Cancel", style: .Cancel) {
+    func alert(_ message: String) {
+        let alert = UIAlertController(title: nil, message: message, preferredStyle: UIAlertControllerStyle.alert)
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) {
             action in
-            self.dismissViewControllerAnimated(true, completion: nil)
+            self.dismiss(animated: true, completion: nil)
         }
         alert.addAction(cancelAction)
-        self.presentViewController(alert, animated: true, completion: nil)
+        self.present(alert, animated: true, completion: nil)
     }
 
 }
